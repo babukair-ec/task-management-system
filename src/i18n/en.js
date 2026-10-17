@@ -1,6 +1,6 @@
 export default {
   navbar: {
-    brand: 'TaskOrbit',
+    brand: 'TaskFlow',
     dashboard: 'Dashboard',
     myTasks: 'My Tasks',
     availableTasks: 'Available Tasks',
@@ -13,7 +13,7 @@ export default {
   },
   dashboard: {
     greeting: 'Welcome back, {name}',
-    subtitle: 'Employee-centered task management. Coordinate, claim, and solve blockers collaboratively.',
+    subtitle: 'Coordinate, claim, and solve blockers collaboratively.',
     myActiveTasks: 'My Active Tasks',
     availableToClaim: 'Available to Claim',
     pendingRequests: 'Pending Requests',
@@ -240,8 +240,8 @@ export default {
     REQUEST: 'Peer Request',
   },
   auth: {
-    loginTitle: 'Sign in to TaskOrbit',
-    loginSubtitle: 'Employee-Centered Task Management Platform',
+    loginTitle: 'Sign in to TaskFlow',
+    loginSubtitle: 'Task Management Platform',
     registerTitle: 'Create New Account',
     registerSubtitle: 'Join your team and coordinate tasks seamlessly',
     username: 'Username',

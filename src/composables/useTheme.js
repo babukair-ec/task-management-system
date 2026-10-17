@@ -5,31 +5,31 @@ export const THEMES = [
     id: 'dark',
     name: 'Dark Obsidian',
     icon: 'bi-moon-stars-fill',
-    colors: ['#6366f1', '#1e1e2e', '#13131f']
+    colors: ['#2563eb', '#161b22', '#0d1117']
   },
   {
     id: 'light',
     name: 'Clean Daylight',
     icon: 'bi-sun-fill',
-    colors: ['#4f46e5', '#ffffff', '#f4f6fb']
+    colors: ['#2563eb', '#ffffff', '#f4f6fb']
   },
   {
     id: 'cyberpunk',
     name: 'Cyberpunk Neon',
     icon: 'bi-lightning-charge-fill',
-    colors: ['#ec4899', '#06b6d4', '#0a0614']
+    colors: ['#00f0ff', '#ff7700', '#06070d']
   },
   {
     id: 'emerald',
     name: 'Emerald Forest',
     icon: 'bi-tree-fill',
-    colors: ['#10b981', '#11221b', '#0a1612']
+    colors: ['#10b981', '#11221b', '#081510']
   },
   {
     id: 'royal',
     name: 'Midnight Royal',
     icon: 'bi-gem',
-    colors: ['#f59e0b', '#818cf8', '#0b0f1e']
+    colors: ['#3b82f6', '#0ea5e9', '#070a17']
   }
 ]
 

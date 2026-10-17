@@ -17,7 +17,7 @@
     <!-- Loading State -->
     <div v-if="loading" class="loading-spinner">
       <div class="spinner-border spinner-border-sm text-primary"></div>
-      <span>Loading statistics...</span>
+      <span>{{ t('common.loading') }}</span>
     </div>
 
     <div v-else-if="error" class="alert alert-danger">
@@ -30,7 +30,7 @@
         <!-- 1. Total Tasks -->
         <div class="col-sm-6 col-xl-3">
           <div class="stat-card">
-            <div class="stat-icon" style="background: rgba(99,102,241,0.15); color: #818cf8">
+            <div class="stat-icon" style="background: rgba(37, 99, 235, 0.15); color: #60a5fa">
               <i class="bi bi-layers-fill"></i>
             </div>
             <div>
@@ -198,7 +198,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="emp in (data.employee_stats || [])" :key="emp.id">
+              <tr v-for="emp in (data.employee_stats || [])" :key="emp.outer_id || emp.id">
                 <td>
                   <div class="d-flex align-items-center gap-2">
                     <div class="avatar">{{ initials(emp.display_name || emp.username) }}</div>
@@ -256,7 +256,7 @@ const statusRows = computed(() => {
     { key: 'in_progress', statusKey: 'IN_PROGRESS', count: counts.in_progress || 0, color: '#fbbf24', badgeClass: 'status-in_progress' },
     { key: 'blocked',     statusKey: 'BLOCKED',     count: counts.blocked || 0,     color: '#f87171', badgeClass: 'status-blocked' },
     { key: 'available',   statusKey: 'AVAILABLE',   count: counts.available || 0,   color: '#22d3ee', badgeClass: 'status-available' },
-    { key: 'assigned',    statusKey: 'ASSIGNED',    count: counts.assigned || 0,    color: '#a5b4fc', badgeClass: 'status-assigned' },
+    { key: 'assigned',    statusKey: 'ASSIGNED',    count: counts.assigned || 0,    color: '#60a5fa', badgeClass: 'status-assigned' },
     { key: 'completed',   statusKey: 'COMPLETED',   count: counts.completed || 0,   color: '#34d399', badgeClass: 'status-completed' },
     { key: 'draft',       statusKey: 'DRAFT',       count: counts.draft || 0,       color: '#94a3b8', badgeClass: 'status-draft' },
     { key: 'cancelled',   statusKey: 'CANCELLED',   count: counts.cancelled || 0,   color: '#64748b', badgeClass: 'status-cancelled' },
@@ -285,7 +285,7 @@ async function fetchData() {
     const res = await reportsApi.getSummary()
     data.value = res.data
   } catch (err) {
-    error.value = err.response?.data?.detail || err.message || 'Failed to load statistics'
+    error.value = err.response?.data?.message || err.response?.data?.error || err.response?.data?.detail || 'Failed to load statistics'
   } finally {
     loading.value = false
   }

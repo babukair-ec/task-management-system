@@ -15,6 +15,20 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
+  build: {
+    target: 'esnext',
+    cssCodeSplit: true,
+    chunkSizeWarningLimit: 600,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-vue': ['vue', 'vue-router', 'pinia'],
+          'vendor-bootstrap': ['bootstrap'],
+          'vendor-axios': ['axios'],
+        },
+      },
+    },
+  },
   server: {
     port: 5173,
     proxy: {

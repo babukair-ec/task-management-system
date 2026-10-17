@@ -10,6 +10,13 @@ const apiClient = axios.create({
 // Attach Bearer token and current locale to every request
 apiClient.interceptors.request.use((config) => {
   const auth = useAuthStore()
+
+  // If token is expired, reject request before dispatch and redirect to login
+  if (auth.token && auth.isExpired()) {
+    auth.handleSessionExpired()
+    return Promise.reject(new axios.Cancel('Session expired. Action blocked.'))
+  }
+
   if (auth.token) {
     config.headers.Authorization = `Bearer ${auth.token}`
   }
@@ -18,16 +25,16 @@ apiClient.interceptors.request.use((config) => {
   return config
 })
 
-// Handle 401 globally — redirect to login
+// Handle 401 globally — terminate session and redirect to login
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
+    if (axios.isCancel(error)) {
+      return Promise.reject(error)
+    }
     if (error.response?.status === 401) {
       const auth = useAuthStore()
-      auth.clearAuth()
-      if (window.location.pathname !== '/login') {
-        router.push('/login')
-      }
+      auth.handleSessionExpired()
     }
     return Promise.reject(error)
   }

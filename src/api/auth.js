@@ -1,19 +1,45 @@
 import apiClient from './client'
 
 export const authApi = {
+  // Request 1: Authenticate with User Service to get token and user info
+  getTokenAndUser: (username, password) =>
+    apiClient.post('/auth/token/', { username, password }),
+
+  // Request 2: Fetch employee profile with Bearer token from Employee Service
+  getEmployeeProfile: (token) =>
+    apiClient.get('/employees/me/', {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    }),
+
+  // Two-step login workflow
   login: async (username, password) => {
-    // Calls Django User Service (/api/auth/token/)
-    const response = await apiClient.post('/auth/token/', { username, password })
-    const data = response.data
-    // Normalize token and user keys for compatibility
+    // 1. Request One: Token and User Data from User Management Service (/api/auth/token/)
+    const tokenResponse = await apiClient.post('/auth/token/', { username, password })
+    const data = tokenResponse.data
+    const token = data.token || data.access
+    const user = data.user || { username }
+
+    // 2. Request Two: Employee Profile from Employee Service (/api/employees/me/)
+    let employee = null
+    try {
+      const empResponse = await apiClient.get('/employees/me/', {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      employee = empResponse.data
+    } catch (err) {
+      console.warn('[authApi] Employee profile fetch on login returned:', err)
+      employee = user
+    }
+
     return {
-      ...response,
+      ...tokenResponse,
       data: {
         ...data,
-        token: data.token || data.access,
-        access: data.access || data.token,
-        user: data.user || data.employee || { username },
-        employee: data.employee || data.user,
+        token,
+        access: token,
+        expires_in: data.expires_in || 28800,
+        user,
+        employee,
       }
     }
   },

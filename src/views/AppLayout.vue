@@ -11,7 +11,9 @@
 </template>
 
 <script setup>
+import { defineAsyncComponent } from 'vue'
 import { RouterView } from 'vue-router'
-import AppNavbar from '@/components/AppNavbar.vue'
-import AppSidebar from '@/components/AppSidebar.vue'
+
+const AppNavbar = defineAsyncComponent(() => import('@/components/AppNavbar.vue'))
+const AppSidebar = defineAsyncComponent(() => import('@/components/AppSidebar.vue'))
 </script>

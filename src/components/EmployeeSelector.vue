@@ -6,7 +6,7 @@
           v-model="query"
           type="text"
           class="form-control tf-input"
-          :placeholder="placeholder"
+          :placeholder="placeholder || t('common.search_employees')"
           @focus="open = true"
           @blur="delayClose"
         />
@@ -17,7 +17,7 @@
         >
           <button
             v-for="emp in filtered"
-            :key="emp.id"
+            :key="emp.outer_id || emp.id"
             type="button"
             class="d-flex align-items-center gap-2 w-100 px-3 py-2 border-0 text-start"
             style="background:transparent; color:var(--tf-text); font-size:0.875rem; cursor:pointer"
@@ -37,7 +37,7 @@
     <div v-if="multiple && selected.length" class="d-flex flex-wrap gap-2 mt-2">
       <span
         v-for="emp in selected"
-        :key="emp.id"
+        :key="emp.outer_id || emp.id"
         class="d-inline-flex align-items-center gap-1 px-2 py-1 rounded"
         style="background:var(--tf-primary-glow); border:1px solid var(--tf-primary); font-size:0.78rem"
       >
@@ -54,11 +54,14 @@
 import { ref, computed, onMounted } from 'vue'
 import { employeesApi } from '@/api/employees'
 import { initials } from '@/utils/formatters'
+import { useI18n } from '@/composables/useI18n'
+
+const { t } = useI18n()
 
 const props = defineProps({
-  modelValue: { type: [Array, Number, null], default: null },
+  modelValue: { type: [Array, String, Number, null], default: null },
   multiple:   { type: Boolean, default: false },
-  placeholder:{ type: String, default: 'Search employees…' },
+  placeholder:{ type: String, default: '' },
   excludeIds: { type: Array, default: () => [] },
 })
 const emit = defineEmits(['update:modelValue'])
@@ -74,9 +77,12 @@ onMounted(async () => {
     allEmployees.value = data || []
     if (props.modelValue) {
       if (props.multiple && Array.isArray(props.modelValue)) {
-        selected.value = allEmployees.value.filter(e => props.modelValue.includes(e.id))
+        selected.value = allEmployees.value.filter(e => {
+          const empKey = e.outer_id || e.id
+          return props.modelValue.includes(empKey)
+        })
       } else {
-        const found = allEmployees.value.find(e => e.id === props.modelValue)
+        const found = allEmployees.value.find(e => (e.outer_id || e.id) === props.modelValue)
         if (found) {
           query.value = found.display_name || found.full_name || found.username
         }
@@ -87,30 +93,33 @@ onMounted(async () => {
 
 const filtered = computed(() => {
   const q = query.value.toLowerCase()
-  return allEmployees.value.filter(e =>
-    !props.excludeIds.includes(e.id) &&
-    (e.username?.toLowerCase().includes(q) ||
-     (e.display_name || e.full_name || '').toLowerCase().includes(q))
-  )
+  return allEmployees.value.filter(e => {
+    const empKey = e.outer_id || e.id
+    return !props.excludeIds.includes(empKey) &&
+      (e.username?.toLowerCase().includes(q) ||
+       (e.display_name || e.full_name || '').toLowerCase().includes(q))
+  })
 })
 
 function selectEmployee(emp) {
+  const empKey = emp.outer_id || emp.id
   if (props.multiple) {
-    if (!selected.value.find(s => s.id === emp.id)) {
+    if (!selected.value.find(s => (s.outer_id || s.id) === empKey)) {
       selected.value.push(emp)
-      emit('update:modelValue', selected.value.map(e => e.id))
+      emit('update:modelValue', selected.value.map(e => e.outer_id || e.id))
     }
     query.value = ''
   } else {
     query.value = emp.display_name || emp.full_name || emp.username
-    emit('update:modelValue', emp.id)
+    emit('update:modelValue', empKey)
     open.value = false
   }
 }
 
 function remove(emp) {
-  selected.value = selected.value.filter(e => e.id !== emp.id)
-  emit('update:modelValue', selected.value.map(e => e.id))
+  const empKey = emp.outer_id || emp.id
+  selected.value = selected.value.filter(e => (e.outer_id || e.id) !== empKey)
+  emit('update:modelValue', selected.value.map(e => e.outer_id || e.id))
 }
 
 function delayClose() {

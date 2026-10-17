@@ -80,10 +80,10 @@
       <div class="vr mx-1 opacity-25 d-none d-sm-block" style="height: 20px;"></div>
 
       <!-- Current User info -->
-      <span class="text-muted small d-none d-sm-flex align-items-center">
-        <i class="bi bi-person-circle me-1"></i>
-        {{ auth.user?.full_name || auth.user?.display_name || auth.user?.username }}
-      </span>
+      <RouterLink to="/profile" class="btn btn-sm btn-tf-ghost text-muted small d-none d-sm-flex align-items-center" :title="t('nav.profile')">
+        <i class="bi bi-person-circle me-1 text-primary"></i>
+        <span>{{ auth.user?.full_name || auth.user?.display_name || auth.user?.username }}</span>
+      </RouterLink>
 
       <!-- Logout button -->
       <button class="btn btn-sm btn-tf-ghost" @click="logout" :title="t('nav.logout')">
@@ -97,7 +97,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useAuthStore } from '@/stores/auth'
-import { useRouter } from 'vue-router'
+import { useRouter, RouterLink } from 'vue-router'
 import { authApi } from '@/api/auth'
 import { useToast } from '@/composables/useToast'
 import { useI18n } from '@/composables/useI18n'

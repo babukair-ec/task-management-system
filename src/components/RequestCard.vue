@@ -7,8 +7,8 @@
           <span class="fw-semibold text-truncate">{{ request.task_title || request.task?.title || 'Task Request' }}</span>
         </div>
         <div class="d-flex gap-3 flex-wrap" style="font-size:0.78rem; color:var(--tf-text-muted)">
-          <span><i class="bi bi-person me-1"></i>From: {{ request.requester_detail?.display_name || request.requester_detail?.username || request.requester?.full_name || request.requester?.username || request.requester_id }}</span>
-          <span><i class="bi bi-person-arrow-right me-1"></i>To: {{ request.requested_employee_detail?.display_name || request.requested_employee_detail?.username || request.requested_employee?.full_name || request.requested_employee?.username || request.requested_employee_id }}</span>
+          <span><i class="bi bi-person me-1"></i>{{ t('common.from') }}: {{ request.requester_detail?.display_name || request.requester_detail?.username || request.requester?.full_name || request.requester?.username || request.requester_id }}</span>
+          <span><i class="bi bi-person-arrow-right me-1"></i>{{ t('common.to') }}: {{ request.requested_employee_detail?.display_name || request.requested_employee_detail?.username || request.requested_employee?.full_name || request.requested_employee?.username || request.requested_employee_id }}</span>
           <span><i class="bi bi-clock me-1"></i>{{ timeAgo(request.created_at || request.createdAt) }}</span>
         </div>
       </div>
@@ -20,8 +20,11 @@
 </template>
 
 <script setup>
+import { useI18n } from '@/composables/useI18n'
 import TaskStatus from './TaskStatus.vue'
 import { timeAgo } from '@/utils/formatters'
+
+const { t } = useI18n()
 
 defineProps({
   request: { type: Object, required: true },

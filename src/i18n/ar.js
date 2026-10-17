@@ -1,6 +1,6 @@
 export default {
   navbar: {
-    brand: 'TaskOrbit',
+    brand: 'TaskFlow',
     dashboard: 'لوحة المتابعة',
     myTasks: 'مهامي',
     availableTasks: 'المهام المتاحة',
@@ -241,7 +241,7 @@ export default {
     REQUEST: 'طلب إسناد',
   },
   auth: {
-    loginTitle: 'تسجيل الدخول إلى TaskOrbit',
+    loginTitle: 'تسجيل الدخول إلى TaskFlow',
     loginSubtitle: 'منصة إدارة وتنسيق المهام التعاونية لفرق العمل',
     registerTitle: 'إنشاء حساب موظف جديد',
     registerSubtitle: 'انضم إلى المنصة وشارك فريقك في تنظيم وإنجاز المهام',

@@ -18,7 +18,7 @@
             <i class="bi bi-play-circle"></i>
           </div>
           <div>
-            <div class="stat-value">{{ data.my_active_tasks?.length || 0 }}</div>
+            <div class="stat-value">{{ data?.my_active_tasks?.length || 0 }}</div>
             <div class="stat-label">{{ t('dashboard.active_tasks') }}</div>
           </div>
         </div>
@@ -29,7 +29,7 @@
             <i class="bi bi-exclamation-octagon"></i>
           </div>
           <div>
-            <div class="stat-value">{{ data.my_blocked_tasks?.length || 0 }}</div>
+            <div class="stat-value">{{ data?.my_blocked_tasks?.length || 0 }}</div>
             <div class="stat-label">{{ t('dashboard.blocked_tasks') }}</div>
           </div>
         </div>
@@ -40,18 +40,18 @@
             <i class="bi bi-collection"></i>
           </div>
           <div>
-            <div class="stat-value">{{ data.available_tasks?.length || 0 }}</div>
+            <div class="stat-value">{{ data?.available_tasks?.length || 0 }}</div>
             <div class="stat-label">{{ t('dashboard.available_tasks') }}</div>
           </div>
         </div>
       </div>
       <div class="col-6 col-lg-3">
         <div class="stat-card">
-          <div class="stat-icon" style="background:rgba(99,102,241,0.15); color:#a5b4fc">
+          <div class="stat-icon" style="background:rgba(37,99,235,0.15); color:#60a5fa">
             <i class="bi bi-envelope-arrow-up"></i>
           </div>
           <div>
-            <div class="stat-value">{{ data.pending_requests?.length || 0 }}</div>
+            <div class="stat-value">{{ data?.pending_requests?.length || 0 }}</div>
             <div class="stat-label">{{ t('dashboard.pending_requests') }}</div>
           </div>
         </div>
@@ -60,15 +60,15 @@
 
     <div v-if="loading" class="loading-spinner">
       <div class="spinner-border text-primary" style="width:1.5rem;height:1.5rem"></div>
-      <span>Loading dashboard…</span>
+      <span>{{ t('common.loading') }}</span>
     </div>
 
     <div v-else class="row g-4">
       <!-- Active Tasks -->
       <div class="col-12 col-xl-6">
         <div class="tf-card-header"><i class="bi bi-play-circle"></i>{{ t('dashboard.active_tasks') }}</div>
-        <div v-if="data.my_active_tasks?.length">
-          <TaskCard v-for="t in data.my_active_tasks" :key="t.id" :task="t" class="mb-2" />
+        <div v-if="data?.my_active_tasks?.length">
+          <TaskCard v-for="t in data?.my_active_tasks" :key="t.id" :task="t" class="mb-2" />
         </div>
         <div v-else class="empty-state" style="padding:1.5rem">
           <p>{{ t('dashboard.no_active') }}</p>
@@ -78,8 +78,8 @@
       <!-- Blocked Tasks -->
       <div class="col-12 col-xl-6">
         <div class="tf-card-header"><i class="bi bi-exclamation-octagon text-danger"></i>{{ t('dashboard.blocked_tasks') }}</div>
-        <div v-if="data.my_blocked_tasks?.length">
-          <TaskCard v-for="t in data.my_blocked_tasks" :key="t.id" :task="t" class="mb-2" />
+        <div v-if="data?.my_blocked_tasks?.length">
+          <TaskCard v-for="t in data?.my_blocked_tasks" :key="t.id" :task="t" class="mb-2" />
         </div>
         <div v-else class="empty-state" style="padding:1.5rem">
           <p>{{ t('dashboard.no_blocked') }}</p>
@@ -89,8 +89,8 @@
       <!-- Available to Claim -->
       <div class="col-12 col-xl-6">
         <div class="tf-card-header"><i class="bi bi-collection"></i>{{ t('dashboard.available_tasks') }}</div>
-        <div v-if="data.available_tasks?.length">
-          <TaskCard v-for="t in data.available_tasks" :key="t.id" :task="t" class="mb-2" />
+        <div v-if="data?.available_tasks?.length">
+          <TaskCard v-for="t in data?.available_tasks" :key="t.id" :task="t" class="mb-2" />
         </div>
         <div v-else class="empty-state" style="padding:1.5rem">
           <p>{{ t('dashboard.no_available') }}</p>
@@ -100,9 +100,9 @@
       <!-- Pending Requests -->
       <div class="col-12 col-xl-6">
         <div class="tf-card-header"><i class="bi bi-envelope-arrow-up"></i>{{ t('dashboard.pending_requests') }}</div>
-        <div v-if="data.pending_requests?.length">
+        <div v-if="data?.pending_requests?.length">
           <RequestCard
-            v-for="req in data.pending_requests"
+            v-for="req in data?.pending_requests"
             :key="req.id"
             :request="req"
           >
@@ -120,8 +120,8 @@
       <!-- Recently Completed -->
       <div class="col-12">
         <div class="tf-card-header"><i class="bi bi-check-circle text-success"></i>{{ t('dashboard.recently_completed') }}</div>
-        <div v-if="data.recently_completed?.length">
-          <TaskCard v-for="t in data.recently_completed" :key="t.id" :task="t" class="mb-2" />
+        <div v-if="data?.recently_completed?.length">
+          <TaskCard v-for="t in data?.recently_completed" :key="t.id" :task="t" class="mb-2" />
         </div>
         <div v-else class="empty-state" style="padding:1.5rem">
           <p>{{ t('dashboard.no_completed') }}</p>
@@ -130,17 +130,17 @@
     </div>
   </div>
 </template>
-
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, defineAsyncComponent } from 'vue'
 import { RouterLink } from 'vue-router'
 import { employeesApi } from '@/api/employees'
 import { taskRequestsApi } from '@/api/taskRequests'
 import { useAuthStore } from '@/stores/auth'
 import { useToast } from '@/composables/useToast'
 import { useI18n } from '@/composables/useI18n'
-import TaskCard from '@/components/TaskCard.vue'
-import RequestCard from '@/components/RequestCard.vue'
+
+const TaskCard = defineAsyncComponent(() => import('@/components/TaskCard.vue'))
+const RequestCard = defineAsyncComponent(() => import('@/components/RequestCard.vue'))
 
 const auth   = useAuthStore()
 const toast  = useToast()
@@ -153,8 +153,8 @@ async function load() {
   try {
     const { data: d } = await employeesApi.dashboard()
     data.value = d
-  } catch {
-    toast.error('Failed to load dashboard')
+  } catch (err) {
+    toast.error(err.response?.data?.message || err.response?.data?.error || err.response?.data?.detail || 'Failed to load dashboard')
   } finally {
     loading.value = false
   }
@@ -163,20 +163,20 @@ async function load() {
 async function acceptReq(id) {
   try {
     await taskRequestsApi.accept(id)
-    toast.success('Request accepted — task assigned to you!')
+    toast.success(t('dashboard.request_accepted'))
     load()
   } catch (e) {
-    toast.error(e.response?.data?.error || 'Failed to accept')
+    toast.error(e.response?.data?.message || e.response?.data?.error || e.response?.data?.detail || 'Failed to accept')
   }
 }
 
 async function rejectReq(id) {
   try {
     await taskRequestsApi.reject(id)
-    toast.info('Request rejected')
+    toast.info(t('dashboard.request_rejected'))
     load()
   } catch (e) {
-    toast.error(e.response?.data?.error || 'Failed to reject')
+    toast.error(e.response?.data?.message || e.response?.data?.error || e.response?.data?.detail || 'Failed to reject')
   }
 }
 

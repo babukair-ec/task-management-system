@@ -64,8 +64,8 @@ async function load() {
   try {
     const { data } = await tasksApi.available()
     tasks.value = data || []
-  } catch {
-    toast.error('Failed to load available tasks')
+  } catch (e) {
+    toast.error(e.response?.data?.message || e.response?.data?.error || e.response?.data?.detail || 'Failed to load available tasks')
   } finally {
     loading.value = false
   }
@@ -75,10 +75,10 @@ async function claimTask(id) {
   claiming.value = id
   try {
     await tasksApi.claim(id)
-    toast.success('Task claimed!')
+    toast.success(t('tasks.claim_success'))
     router.push(`/tasks/${id}`)
   } catch (e) {
-    toast.error(e.response?.data?.error || 'Failed to claim task')
+    toast.error(e.response?.data?.message || e.response?.data?.error || e.response?.data?.detail || 'Failed to claim task')
     load()
   } finally {
     claiming.value = null

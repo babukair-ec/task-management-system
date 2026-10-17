@@ -21,6 +21,8 @@ export const tasksApi = {
       direct_assignee_id: data.direct_assignee_id || data.assignee_id || null,
       allowed_claimant_ids: data.allowed_claimant_ids || data.eligible_employee_ids || [],
       requested_employee_id: data.requested_employee_id || data.request_employee_id || null,
+      project_id: data.project_id || null,
+      problem_id: data.problem_id || null,
     }
     return apiClient.post('/tasks/', payload)
   },
@@ -30,6 +32,21 @@ export const tasksApi = {
 
   start: (id) =>
     apiClient.post(`/tasks/${id}/start/`),
+
+  submitForReview: (id) =>
+    apiClient.post(`/tasks/${id}/submit-for-review/`),
+
+  review: (id, data) =>
+    apiClient.post(`/tasks/${id}/review/`, data),
+
+  testingQueue: () =>
+    apiClient.get('/tasks/testing-queue/'),
+
+  startTest: (id) =>
+    apiClient.post(`/tasks/${id}/start-test/`),
+
+  completeTest: (id, data) =>
+    apiClient.post(`/tasks/${id}/complete-test/`, data),
 
   complete: (id) =>
     apiClient.post(`/tasks/${id}/complete/`),
@@ -54,11 +71,14 @@ export const tasksApi = {
 
   // Problems linked with tasks
   getProblems: (id) =>
-    apiClient.get('/problems/', { params: { taskId: id } }),
+    apiClient.get('/problems/', { params: { task_id: id } }),
 
   reportProblem: (id, d) =>
     apiClient.post('/problems/', {
-      taskId: id,
+      task_id: id,
       description: d.description || d,
     }),
+
+  createProblemResolutionTask: (problemId, data = {}) =>
+    apiClient.post(`/problems/${problemId}/create-resolution-task/`, data),
 }

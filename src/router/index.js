@@ -9,6 +9,12 @@ const routes = [
     meta: { public: true },
   },
   {
+    path: '/register',
+    name: 'Register',
+    component: () => import('@/views/LoginView.vue'),
+    meta: { public: true },
+  },
+  {
     path: '/',
     redirect: '/dashboard',
     component: () => import('@/views/AppLayout.vue'),
@@ -17,6 +23,11 @@ const routes = [
         path: 'dashboard',
         name: 'Dashboard',
         component: () => import('@/views/DashboardView.vue'),
+      },
+      {
+        path: 'profile',
+        name: 'Profile',
+        component: () => import('@/views/ProfileView.vue'),
       },
       {
         path: 'tasks',
@@ -40,6 +51,16 @@ const routes = [
         props: true,
       },
       {
+        path: 'testing-queue',
+        name: 'TestingQueue',
+        component: () => import('@/views/TestingQueueView.vue'),
+      },
+      {
+        path: 'supervision',
+        name: 'Supervision',
+        component: () => import('@/views/SupervisionView.vue'),
+      },
+      {
         path: 'task-requests',
         name: 'TaskRequests',
         component: () => import('@/views/TaskRequestsView.vue'),
@@ -54,6 +75,30 @@ const routes = [
         path: 'employees',
         name: 'Employees',
         component: () => import('@/views/EmployeesView.vue'),
+      },
+      {
+        path: 'employees/create',
+        name: 'EmployeeCreate',
+        component: () => import('@/views/EmployeeCreateView.vue'),
+      },
+      {
+        path: 'departments',
+        name: 'Departments',
+        component: () => import('@/views/DepartmentsView.vue'),
+      },
+      {
+        path: 'projects',
+        name: 'Projects',
+        component: () => import('@/views/ProjectsView.vue'),
+      },
+      {
+        path: 'departments-projects',
+        redirect: '/departments',
+      },
+      {
+        path: 'departments-projects/assign',
+        name: 'DepartmentAssign',
+        component: () => import('@/views/DepartmentAssignView.vue'),
       },
       {
         path: 'statistics',
@@ -80,10 +125,32 @@ const router = createRouter({
 // Auth guard
 router.beforeEach((to) => {
   const auth = useAuthStore()
-  if (!to.meta.public && !auth.isAuthenticated) {
-    return { name: 'Login', query: { redirect: to.fullPath } }
+
+  // 1. If token is present but expired, immediately terminate session and relocate to login
+  if (auth.token && auth.isExpired()) {
+    auth.handleSessionExpired()
+    return {
+      name: 'Login',
+      query: {
+        redirect: to.fullPath !== '/login' ? to.fullPath : undefined,
+        expired: 'true',
+      },
+    }
   }
-  if (to.name === 'Login' && auth.isAuthenticated) {
+
+  // 2. Non-public routes require active valid authentication
+  if (!to.meta.public && !auth.isAuthenticated) {
+    return {
+      name: 'Login',
+      query: {
+        redirect: to.fullPath !== '/login' ? to.fullPath : undefined,
+        ...(to.query.expired ? { expired: 'true' } : {}),
+      },
+    }
+  }
+
+  // 3. Prevent logged-in user with valid session from returning to Login or Register
+  if ((to.name === 'Login' || to.name === 'Register') && auth.isAuthenticated) {
     return { name: 'Dashboard' }
   }
 })

@@ -8,12 +8,12 @@
         </div>
         <p class="mb-2" style="font-size:0.9rem">{{ problem.description }}</p>
         <div class="d-flex gap-3 flex-wrap" style="font-size:0.78rem; color:var(--tf-text-muted)">
-          <span><i class="bi bi-person-exclamation me-1"></i>Reported by {{ problem.reported_by_detail?.display_name || problem.reported_by_detail?.username || problem.reported_by_employee_id || problem.reportedByEmployeeId || 'User' }}</span>
+          <span><i class="bi bi-person-exclamation me-1"></i>{{ t('task_detail_view.reported_by') }}: {{ problem.reported_by_detail?.display_name || problem.reported_by_detail?.username || problem.reported_by_employee_id || problem.reportedByEmployeeId || 'User' }}</span>
           <span v-if="problem.resolver_detail || problem.resolver_employee_id || problem.resolverEmployeeId">
-            <i class="bi bi-person-check me-1"></i>Resolver: {{ problem.resolver_detail?.display_name || problem.resolver_detail?.username || problem.resolver_employee_id || problem.resolverEmployeeId }}
+            <i class="bi bi-person-check me-1"></i>{{ t('task_detail_view.resolver') }}: {{ problem.resolver_detail?.display_name || problem.resolver_detail?.username || problem.resolver_employee_id || problem.resolverEmployeeId }}
           </span>
           <span v-if="problem.resolved_at || problem.resolvedAt">
-            <i class="bi bi-clock-check me-1"></i>Resolved {{ formatDateTime(problem.resolved_at || problem.resolvedAt) }}
+            <i class="bi bi-clock-check me-1"></i>{{ t('task_detail_view.resolved') }}: {{ formatDateTime(problem.resolved_at || problem.resolvedAt) }}
           </span>
         </div>
         <div v-if="problem.resolution || problem.resolution_notes || problem.resolutionNotes" class="mt-2 p-2 rounded" style="background:var(--tf-surface-3);font-size:0.82rem">
@@ -29,8 +29,11 @@
 
 <script setup>
 import { RouterLink } from 'vue-router'
+import { useI18n } from '@/composables/useI18n'
 import TaskStatus from './TaskStatus.vue'
 import { formatDateTime } from '@/utils/formatters'
+
+const { t } = useI18n()
 
 defineProps({
   problem:  { type: Object, required: true },

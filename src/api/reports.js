@@ -56,11 +56,13 @@ export const reportsApi = {
 
       // Top performers / Employee performance
       const top_performers = employees.map(emp => {
-        const owned = tasks.filter(t => (t.current_owner_id || t.currentOwnerId) === emp.id)
+        const empOuterId = emp.outer_id || emp.id
+        const owned = tasks.filter(t => (t.current_owner_id || t.currentOwnerId) === empOuterId)
         const done = owned.filter(t => t.status === 'COMPLETED').length
         const active = owned.filter(t => ['ASSIGNED', 'IN_PROGRESS'].includes(t.status)).length
         return {
-          id: emp.id,
+          id: empOuterId,
+          outer_id: empOuterId,
           username: emp.username,
           display_name: emp.full_name || emp.username,
           department: emp.department || 'General',

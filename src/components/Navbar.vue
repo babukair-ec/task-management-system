@@ -6,7 +6,7 @@
           <div class="brand-logo">
             <i class="bi bi-diagram-3-fill"></i>
           </div>
-          <span class="brand-name">TaskOrbit</span>
+          <span class="brand-name">TaskFlow</span>
         </router-link>
 
         <nav class="nav-links">
