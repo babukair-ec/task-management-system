@@ -43,17 +43,11 @@ export async function loadLocaleMessages(lang) {
   loadingPromises[targetLang] = (async () => {
     try {
       if (targetLang === 'ar') {
-        const [legacyMod, jsonMod] = await Promise.all([
-          import('./ar.js'),
-          import('./ar.json'),
-        ]);
-        messages.ar = deepMerge(legacyMod.default || legacyMod, jsonMod.default || jsonMod);
+        const jsonMod = await import('./ar.json');
+        messages.ar = jsonMod.default || jsonMod;
       } else {
-        const [legacyMod, jsonMod] = await Promise.all([
-          import('./en.js'),
-          import('./en.json'),
-        ]);
-        messages.en = deepMerge(legacyMod.default || legacyMod, jsonMod.default || jsonMod);
+        const jsonMod = await import('./en.json');
+        messages.en = jsonMod.default || jsonMod;
       }
       return messages[targetLang];
     } catch (err) {
@@ -157,9 +151,12 @@ export function t(key, paramsOrFallback = {}) {
  * Extracts error message directly from backend response
  */
 export function translateError(error) {
-  if (!error) return 'An error occurred';
+  const isAr = currentLocale.value === 'ar';
+  const defaultMsg = isAr ? 'حدث خطأ غير متوقع' : 'An error occurred';
+  if (!error) return defaultMsg;
 
   let rawMessage = null;
+  let fieldPrefix = null;
 
   if (error.response && error.response.data) {
     const data = error.response.data;
@@ -168,9 +165,11 @@ export function translateError(error) {
     if (!rawMessage && typeof data === 'object') {
       const firstField = Object.keys(data)[0];
       if (firstField && Array.isArray(data[firstField])) {
-        rawMessage = `${firstField}: ${data[firstField][0]}`;
+        fieldPrefix = firstField;
+        rawMessage = data[firstField][0];
       } else if (firstField && typeof data[firstField] === 'string') {
-        rawMessage = `${firstField}: ${data[firstField]}`;
+        fieldPrefix = firstField;
+        rawMessage = data[firstField];
       }
     }
   } else if (typeof error === 'string') {
@@ -179,7 +178,19 @@ export function translateError(error) {
     rawMessage = error.message;
   }
 
-  return rawMessage || 'An error occurred';
+  if (!rawMessage) return defaultMsg;
+
+  // Attempt translation from errors dict
+  const translated = t(`errors.${rawMessage}`);
+  let finalMsg = (translated && translated !== `errors.${rawMessage}`) ? translated : rawMessage;
+
+  if (fieldPrefix) {
+    const translatedField = t(`fields.${fieldPrefix}`);
+    const fieldLabel = (translatedField && translatedField !== `fields.${fieldPrefix}`) ? translatedField : fieldPrefix;
+    return `${fieldLabel}: ${finalMsg}`;
+  }
+
+  return finalMsg;
 }
 
 export function useI18n() {

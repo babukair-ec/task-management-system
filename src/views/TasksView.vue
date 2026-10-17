@@ -84,7 +84,7 @@ async function load() {
   loading.value = true
   try {
     const employeeId = auth.employee?.outer_id || auth.employee?.id || auth.user?.outer_id || auth.user?.id
-    const params = { owner_id: employeeId }
+    const params = { owner_id: employeeId,creator_id: employeeId}
     if (activeFilter.value !== 'all') {
       params.status = activeFilter.value
     }

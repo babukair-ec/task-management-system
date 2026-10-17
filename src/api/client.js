@@ -20,6 +20,10 @@ apiClient.interceptors.request.use((config) => {
   if (auth.token) {
     config.headers.Authorization = `Bearer ${auth.token}`
   }
+  const employeeOuterId = auth.currentEmployee?.outer_id || auth.employee?.outer_id
+  if (employeeOuterId) {
+    config.headers['X-Employee-Id'] = String(employeeOuterId)
+  }
   const locale = localStorage.getItem('tf_locale') || localStorage.getItem('taskorbit_locale') || 'en'
   config.headers['Accept-Language'] = locale
   return config

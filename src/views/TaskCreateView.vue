@@ -111,12 +111,14 @@ import { tasksApi } from '@/api/tasks'
 import { employeesApi } from '@/api/employees'
 import { useToast } from '@/composables/useToast'
 import { useI18n } from '@/composables/useI18n'
+import { useAuthStore } from '@/stores/auth'
 
 const EmployeeSelector = defineAsyncComponent(() => import('@/components/EmployeeSelector.vue'))
 
 const router = useRouter()
 const toast  = useToast()
 const { t }  = useI18n()
+const authStore = useAuthStore()
 
 const submitting = ref(false)
 const errorMsg   = ref('')
@@ -181,6 +183,7 @@ async function submit() {
       direct_assignee_id: form.value.assignee_id,
       allowed_claimant_ids: form.value.eligible_employee_ids,
       requested_employee_id: form.value.request_employee_id,
+      creator_employee_id: authStore.currentEmployee?.outer_id || authStore.employee?.outer_id || null,
     }
     const { data } = await tasksApi.create(payload)
     toast.success(t('tasks.create_success'))

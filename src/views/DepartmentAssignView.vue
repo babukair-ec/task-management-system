@@ -61,7 +61,7 @@
                 :key="proj.id"
                 :value="proj.id"
               >
-                {{ proj.name }} ({{ proj.code }}) — {{ t('assign.parent_dept') }}: {{ proj.department_name || 'N/A' }} - Manager: {{ proj.manager_name || 'None' }}
+                {{ proj.name }} ({{ proj.code }}) — {{ t('assign.parent_dept') }}: {{ proj.department_name || 'N/A' }} - {{ t('assign.manager_label') }}: {{ proj.manager_name || t('assign.none') }}
               </option>
             </optgroup>
           </select>
@@ -87,9 +87,9 @@
               </div>
               <div class="small mb-1">{{ permStatus.reason }}</div>
               <div v-if="permStatus.details" class="small text-muted">
-                Manager: <strong>{{ permStatus.details.manager_name || 'N/A' }}</strong>
+                {{ t('assign.manager_label') }}: <strong>{{ permStatus.details.manager_name || t('assign.none') }}</strong>
                 <span v-if="permStatus.details.superior_names && permStatus.details.superior_names.length > 0">
-                  &bull; Superior(s): <strong>{{ permStatus.details.superior_names.join(', ') }}</strong>
+                  &bull; {{ t('assign.superiors_label') }}: <strong>{{ permStatus.details.superior_names.join(', ') }}</strong>
                 </span>
               </div>
             </div>
@@ -108,9 +108,9 @@
               </div>
               <div class="small mb-1">{{ permStatus.reason }}</div>
               <div v-if="permStatus.details" class="small text-muted">
-                Department Manager: <strong>{{ permStatus.details.manager_name || 'Unassigned' }}</strong>
+                {{ t('assign.dept_manager_label') }}: <strong>{{ permStatus.details.manager_name || t('assign.unassigned') }}</strong>
                 <span v-if="permStatus.details.superior_names && permStatus.details.superior_names.length > 0">
-                  &bull; Authorized Direct Superior(s): <strong>{{ permStatus.details.superior_names.join(', ') }}</strong>
+                  &bull; {{ t('assign.authorized_superiors_label') }}: <strong>{{ permStatus.details.superior_names.join(', ') }}</strong>
                 </span>
               </div>
             </div>
