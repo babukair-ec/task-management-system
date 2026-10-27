@@ -72,13 +72,13 @@ export function getTokenRemainingMs(jwtToken) {
 export const useAuthStore = defineStore('auth', () => {
   const token = ref(localStorage.getItem('tf_token') || localStorage.getItem('access_token') || null)
   const user  = ref(JSON.parse(localStorage.getItem('tf_user') || localStorage.getItem('user_data') || 'null'))
-  const employee = ref(JSON.parse(localStorage.getItem('tf_employee') || localStorage.getItem('employee_data') || 'null'))
+  const employee = ref(JSON.parse(localStorage.getItem('tf_employee') || 'null'))
   const sessionExpired = ref(false)
 
   // Returns true ONLY if token exists AND is NOT expired
   const isAuthenticated = computed(() => !!token.value && !isTokenExpired(token.value))
-  const currentEmployee = computed(() => employee.value || user.value)
-  const currentUser = computed(() => user.value)
+  const currentEmployee = computed(() => employee.value)
+  const hasEmployeeProfile = computed(() => !!employee.value && !!(employee.value.id || employee.value.outer_id))
 
   let expirationTimer = null
   let isRelocating = false
@@ -160,7 +160,7 @@ export const useAuthStore = defineStore('auth', () => {
   function setAuth(newToken, newUser, newEmployee = null, expiresInSeconds = null) {
     token.value = newToken
     user.value  = newUser
-    employee.value = newEmployee || (newUser?.employee || newUser)
+    employee.value = newEmployee || null
     sessionExpired.value = false
 
     localStorage.setItem('tf_token', newToken)
@@ -189,6 +189,17 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.setItem('tf_token_exp', expMs.toString())
 
     scheduleExpirationTimer(newToken)
+  }
+
+  function setEmployee(newEmployee) {
+    employee.value = newEmployee || null
+    if (employee.value) {
+      localStorage.setItem('tf_employee', JSON.stringify(employee.value))
+      localStorage.removeItem('employee_data')
+    } else {
+      localStorage.removeItem('tf_employee')
+      localStorage.removeItem('employee_data')
+    }
   }
 
   function clearAuth() {
@@ -255,9 +266,10 @@ export const useAuthStore = defineStore('auth', () => {
     employee,
     sessionExpired,
     isAuthenticated,
+    hasEmployeeProfile,
     currentEmployee,
-    currentUser,
     setAuth,
+    setEmployee,
     clearAuth,
     logout,
     isExpired,
@@ -265,6 +277,3 @@ export const useAuthStore = defineStore('auth', () => {
     checkExpiration,
   }
 })
-
-// Alias export for backward compatibility
-export const useAuth = useAuthStore

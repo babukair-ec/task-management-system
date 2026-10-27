@@ -272,6 +272,7 @@ import { useAuthStore } from '@/stores/auth'
 import { useI18n } from '@/composables/useI18n'
 import { useTheme } from '@/composables/useTheme'
 import { useToast } from '@/composables/useToast'
+import { useEmployeeSocket } from '@/composables/useEmployeeSocket'
 
 const router = useRouter()
 const route  = useRoute()
@@ -279,6 +280,7 @@ const auth   = useAuthStore()
 const toast  = useToast()
 const { t, locale, setLocale } = useI18n()
 const { theme, themes, setTheme } = useTheme()
+const { onEmployeeEvent } = useEmployeeSocket()
 
 const currentThemeObj = computed(() => themes.find(th => th.id === theme.value) || themes[0])
 
@@ -340,16 +342,20 @@ async function handleLogin() {
     try {
       const empRes = await authApi.getEmployeeProfile(token)
       employee = empRes.data
-    } catch (empErr) {
-      console.warn('[handleLogin] Employee profile request failed, falling back to user data:', empErr)
-      employee = user
+    } catch {
+      employee = null
     }
 
     // Store auth credentials and employee profile
     auth.setAuth(token, user, employee, expiresIn)
     toast.success(t('auth.sign_in_success'))
-    const redirect = route.query.redirect || '/dashboard'
-    router.push(redirect)
+
+    if (employee) {
+      const redirect = route.query.redirect || '/dashboard'
+      router.push(redirect)
+    } else {
+      router.push('/profile')
+    }
   } catch (e) {
     error.value = e.response?.data?.message || e.response?.data?.error || e.response?.data?.detail || e.response?.data?.non_field_errors?.[0] || 'Invalid credentials'
   } finally {
@@ -402,14 +408,12 @@ async function handleRegister() {
       try {
         const empRes = await authApi.getEmployeeProfile(token)
         employee = empRes.data
-      } catch (empErr) {
-        console.warn('[handleRegister] Employee profile request fallback:', empErr)
-        employee = user
+      } catch {
+        employee = null
       }
 
       auth.setAuth(token, user, employee, expiresIn)
-      const redirect = route.query.redirect || '/dashboard'
-      router.push(redirect)
+      router.push('/profile')
     } catch {
       // If auto-login fails, redirect user to sign in tab
       isRegister.value = false

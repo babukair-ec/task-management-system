@@ -40,6 +40,11 @@ export default defineConfig({
         target: 'http://localhost:8002',
         changeOrigin: true,
       },
+      '/ws/employees': {
+        target: 'ws://localhost:8003',
+        ws: true,
+        changeOrigin: true,
+      },
       '/api/tasks': {
         target: 'http://localhost:5001',
         changeOrigin: true,

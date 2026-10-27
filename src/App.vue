@@ -14,12 +14,18 @@
 </template>
 
 <script setup>
+import { onMounted } from 'vue'
 import { RouterView } from 'vue-router'
 import { useToastStore } from '@/composables/useToast'
+import { useEmployeeSocket } from '@/composables/useEmployeeSocket'
 import { storeToRefs } from 'pinia'
 
 const toastStore = useToastStore()
 const { toasts } = storeToRefs(toastStore)
+
+onMounted(() => {
+  useEmployeeSocket()
+})
 
 function toastIcon(type) {
   const icons = {

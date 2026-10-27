@@ -1,5 +1,5 @@
 <template>
-  <RouterLink :to="`/tasks/${task.id}`" class="task-row text-decoration-none">
+  <div class="task-row">
     <div class="flex-grow-1 min-w-0">
       <div class="d-flex align-items-center gap-2 mb-1">
         <span class="fw-600 text-truncate" style="font-weight:600">{{ task.title }}</span>
@@ -23,11 +23,10 @@
       </div>
     </div>
     <TaskStatus :status="task.status" />
-  </RouterLink>
+  </div>
 </template>
 
 <script setup>
-import { RouterLink } from 'vue-router'
 import { useI18n } from '@/composables/useI18n'
 import TaskStatus from './TaskStatus.vue'
 import { formatDate } from '@/utils/formatters'

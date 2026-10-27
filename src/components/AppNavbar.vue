@@ -1,7 +1,7 @@
 <template>
   <nav class="app-navbar">
     <span class="navbar-brand-text">
-      <i class="bi bi-lightning-charge-fill me-1"></i>{{ t('nav.brand') }}
+      {{ t('nav.brand') }}
     </span>
 
     <div class="ms-auto d-flex align-items-center gap-2">
@@ -79,10 +79,16 @@
 
       <div class="vr mx-1 opacity-25 d-none d-sm-block" style="height: 20px;"></div>
 
-      <!-- Current User info -->
-      <RouterLink to="/profile" class="btn btn-sm btn-tf-ghost text-muted small d-none d-sm-flex align-items-center" :title="t('nav.profile')">
-        <i class="bi bi-person-circle me-1 text-primary"></i>
+      <!-- Current User info - Link to Profile -->
+      <RouterLink
+        to="/profile"
+        class="btn btn-sm btn-tf-ghost small d-none d-sm-flex align-items-center text-decoration-none"
+        :class="{ 'text-warning': !auth.hasEmployeeProfile, 'text-muted': auth.hasEmployeeProfile }"
+        :title="t('nav.profile')"
+      >
+        <i class="bi bi-person-circle me-1" :class="auth.hasEmployeeProfile ? 'text-primary' : 'text-warning'"></i>
         <span>{{ auth.user?.full_name || auth.user?.display_name || auth.user?.username }}</span>
+        <span v-if="!auth.hasEmployeeProfile" class="badge bg-warning text-dark ms-1 py-0 px-1" style="font-size:0.65rem">!</span>
       </RouterLink>
 
       <!-- Logout button -->

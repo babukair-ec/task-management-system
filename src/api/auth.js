@@ -54,7 +54,4 @@ export const authApi = {
       return { data: { success: true } }
     }
   },
-
-  me: () =>
-    apiClient.get('/auth/me/'),
 }

@@ -5,13 +5,11 @@
         <h1 class="page-title">{{ t('dashboard.title') }}</h1>
         <p class="page-subtitle">{{ t('dashboard.welcome') }}, {{ auth.user?.full_name || auth.user?.display_name || auth.user?.username }} 👋</p>
       </div>
-      <RouterLink to="/tasks/create" class="btn btn-tf-primary">
-        <i class="bi bi-plus-lg me-2"></i>{{ t('tasks.create_btn') }}
-      </RouterLink>
     </div>
 
     <!-- Stat Cards -->
     <div class="row g-3 mb-4" v-if="!loading">
+      <!-- 1. Tasks in Progress (المهام قيد التنفيذ) -->
       <div class="col-6 col-lg-3">
         <div class="stat-card">
           <div class="stat-icon" style="background:rgba(245,158,11,0.15); color:#fbbf24">
@@ -23,6 +21,21 @@
           </div>
         </div>
       </div>
+
+      <!-- 2. Remaining Tasks (المهام المتبقية) -->
+      <div class="col-6 col-lg-3">
+        <div class="stat-card">
+          <div class="stat-icon" style="background:rgba(59,130,246,0.15); color:#3b82f6">
+            <i class="bi bi-hourglass-split"></i>
+          </div>
+          <div>
+            <div class="stat-value">{{ data?.remaining_tasks_count ?? 0 }}</div>
+            <div class="stat-label">{{ t('dashboard.remaining_tasks') }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Blocked / Pending Tasks (المهام المعلقة) -->
       <div class="col-6 col-lg-3">
         <div class="stat-card">
           <div class="stat-icon" style="background:rgba(239,68,68,0.15); color:#f87171">
@@ -34,25 +47,16 @@
           </div>
         </div>
       </div>
+
+      <!-- 4. Completed Tasks (المهام المكتملة) -->
       <div class="col-6 col-lg-3">
         <div class="stat-card">
-          <div class="stat-icon" style="background:rgba(6,182,212,0.15); color:#22d3ee">
-            <i class="bi bi-collection"></i>
+          <div class="stat-icon" style="background:rgba(16,185,129,0.15); color:#10b981">
+            <i class="bi bi-check2-circle"></i>
           </div>
           <div>
-            <div class="stat-value">{{ data?.available_tasks?.length || 0 }}</div>
-            <div class="stat-label">{{ t('dashboard.available_tasks') }}</div>
-          </div>
-        </div>
-      </div>
-      <div class="col-6 col-lg-3">
-        <div class="stat-card">
-          <div class="stat-icon" style="background:rgba(37,99,235,0.15); color:#60a5fa">
-            <i class="bi bi-envelope-arrow-up"></i>
-          </div>
-          <div>
-            <div class="stat-value">{{ data?.pending_requests?.length || 0 }}</div>
-            <div class="stat-label">{{ t('dashboard.pending_requests') }}</div>
+            <div class="stat-value">{{ data?.completed_tasks_count ?? 0 }}</div>
+            <div class="stat-label">{{ t('dashboard.completed_tasks') }}</div>
           </div>
         </div>
       </div>
@@ -86,37 +90,6 @@
         </div>
       </div>
 
-      <!-- Available to Claim -->
-      <div class="col-12 col-xl-6">
-        <div class="tf-card-header"><i class="bi bi-collection"></i>{{ t('dashboard.available_tasks') }}</div>
-        <div v-if="data?.available_tasks?.length">
-          <TaskCard v-for="t in data?.available_tasks" :key="t.id" :task="t" class="mb-2" />
-        </div>
-        <div v-else class="empty-state" style="padding:1.5rem">
-          <p>{{ t('dashboard.no_available') }}</p>
-        </div>
-      </div>
-
-      <!-- Pending Requests -->
-      <div class="col-12 col-xl-6">
-        <div class="tf-card-header"><i class="bi bi-envelope-arrow-up"></i>{{ t('dashboard.pending_requests') }}</div>
-        <div v-if="data?.pending_requests?.length">
-          <RequestCard
-            v-for="req in data?.pending_requests"
-            :key="req.id"
-            :request="req"
-          >
-            <template #actions>
-              <button class="btn btn-sm btn-tf-primary me-2" @click="acceptReq(req.id)">{{ t('dashboard.accept_btn') }}</button>
-              <button class="btn btn-sm btn-tf-ghost" @click="rejectReq(req.id)">{{ t('dashboard.reject_btn') }}</button>
-            </template>
-          </RequestCard>
-        </div>
-        <div v-else class="empty-state" style="padding:1.5rem">
-          <p>{{ t('dashboard.no_requests') }}</p>
-        </div>
-      </div>
-
       <!-- Recently Completed -->
       <div class="col-12">
         <div class="tf-card-header"><i class="bi bi-check-circle text-success"></i>{{ t('dashboard.recently_completed') }}</div>
@@ -130,17 +103,15 @@
     </div>
   </div>
 </template>
+
 <script setup>
 import { ref, onMounted, defineAsyncComponent } from 'vue'
-import { RouterLink } from 'vue-router'
 import { employeesApi } from '@/api/employees'
-import { taskRequestsApi } from '@/api/taskRequests'
 import { useAuthStore } from '@/stores/auth'
 import { useToast } from '@/composables/useToast'
 import { useI18n } from '@/composables/useI18n'
 
 const TaskCard = defineAsyncComponent(() => import('@/components/TaskCard.vue'))
-const RequestCard = defineAsyncComponent(() => import('@/components/RequestCard.vue'))
 
 const auth   = useAuthStore()
 const toast  = useToast()
@@ -157,26 +128,6 @@ async function load() {
     toast.error(err.response?.data?.message || err.response?.data?.error || err.response?.data?.detail || 'Failed to load dashboard')
   } finally {
     loading.value = false
-  }
-}
-
-async function acceptReq(id) {
-  try {
-    await taskRequestsApi.accept(id)
-    toast.success(t('dashboard.request_accepted'))
-    load()
-  } catch (e) {
-    toast.error(e.response?.data?.message || e.response?.data?.error || e.response?.data?.detail || 'Failed to accept')
-  }
-}
-
-async function rejectReq(id) {
-  try {
-    await taskRequestsApi.reject(id)
-    toast.info(t('dashboard.request_rejected'))
-    load()
-  } catch (e) {
-    toast.error(e.response?.data?.message || e.response?.data?.error || e.response?.data?.detail || 'Failed to reject')
   }
 }
 
