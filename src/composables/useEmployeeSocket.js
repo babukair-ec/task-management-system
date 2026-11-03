@@ -27,7 +27,7 @@ function handleMessage(event) {
     const eventType = payload.event || payload.type
     const employeeData = payload.data || payload.employee
 
-    if ((eventType === 'employee.created' || eventType === 'employee.updated') && employeeData) {
+    if ((eventType === 'employee.created' || eventType === 'employee.updated' || eventType === 'aboody.employee.created' || eventType === 'aboody.employee.updated' || eventType?.endsWith('employee.created') || eventType?.endsWith('employee.updated')) && employeeData) {
       lastEmployee.value = employeeData
       const auth = useAuthStore()
       const toast = useToast()
@@ -42,7 +42,7 @@ function handleMessage(event) {
 
       if (matchesUser || !auth.employee) {
         auth.setEmployee(employeeData)
-        if (eventType === 'employee.created') {
+        if (eventType === 'employee.created' || eventType === 'aboody.employee.created' || eventType?.endsWith('employee.created')) {
           toast.success(
             t('profile.realtime_created') || `Employee profile for ${employeeData.username} ready!`
           )

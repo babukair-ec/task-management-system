@@ -1,10 +1,19 @@
 <template>
   <div>
+    <!-- Page Header with "New Task" Button -->
     <div class="page-header d-flex align-items-center justify-content-between flex-wrap gap-2">
       <div>
         <h1 class="page-title">{{ t('dashboard.title') }}</h1>
         <p class="page-subtitle">{{ t('dashboard.welcome') }}, {{ auth.user?.full_name || auth.user?.display_name || auth.user?.username }} 👋</p>
       </div>
+
+      <button
+        class="btn btn-tf-primary d-flex align-items-center gap-2 shadow-sm"
+        @click="showCreateModal = true"
+      >
+        <i class="bi bi-plus-lg"></i>
+        <span>{{ t('tasks.create_task') }}</span>
+      </button>
     </div>
 
     <!-- Stat Cards -->
@@ -62,45 +71,120 @@
       </div>
     </div>
 
+    <!-- Loading State -->
     <div v-if="loading" class="loading-spinner">
       <div class="spinner-border text-primary" style="width:1.5rem;height:1.5rem"></div>
       <span>{{ t('common.loading') }}</span>
     </div>
 
+    <!-- Tasks Grid -->
     <div v-else class="row g-4">
       <!-- Active Tasks -->
       <div class="col-12 col-xl-6">
-        <div class="tf-card-header"><i class="bi bi-play-circle"></i>{{ t('dashboard.active_tasks') }}</div>
+        <div class="tf-card-header d-flex align-items-center justify-content-between">
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-play-circle text-warning"></i>
+            <span>{{ t('dashboard.active_tasks') }}</span>
+          </div>
+          <span class="badge bg-secondary-subtle text-secondary py-1 px-2" style="font-size:0.7rem">
+            {{ data?.my_active_tasks?.length || 0 }}
+          </span>
+        </div>
         <div v-if="data?.my_active_tasks?.length">
-          <TaskCard v-for="t in data?.my_active_tasks" :key="t.id" :task="t" class="mb-2" />
+          <TaskCard
+            v-for="t in data?.my_active_tasks"
+            :key="t.id || t.outer_id"
+            :task="t"
+            class="mb-2"
+            @status-changed="load"
+          />
         </div>
         <div v-else class="empty-state" style="padding:1.5rem">
+          <i class="bi bi-inbox"></i>
           <p>{{ t('dashboard.no_active') }}</p>
         </div>
       </div>
 
       <!-- Blocked Tasks -->
       <div class="col-12 col-xl-6">
-        <div class="tf-card-header"><i class="bi bi-exclamation-octagon text-danger"></i>{{ t('dashboard.blocked_tasks') }}</div>
+        <div class="tf-card-header d-flex align-items-center justify-content-between">
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-exclamation-octagon text-danger"></i>
+            <span>{{ t('dashboard.blocked_tasks') }}</span>
+          </div>
+          <span class="badge bg-danger-subtle text-danger py-1 px-2" style="font-size:0.7rem">
+            {{ data?.my_blocked_tasks?.length || 0 }}
+          </span>
+        </div>
         <div v-if="data?.my_blocked_tasks?.length">
-          <TaskCard v-for="t in data?.my_blocked_tasks" :key="t.id" :task="t" class="mb-2" />
+          <TaskCard
+            v-for="t in data?.my_blocked_tasks"
+            :key="t.id || t.outer_id"
+            :task="t"
+            class="mb-2"
+            @status-changed="load"
+          />
         </div>
         <div v-else class="empty-state" style="padding:1.5rem">
+          <i class="bi bi-shield-check"></i>
           <p>{{ t('dashboard.no_blocked') }}</p>
         </div>
       </div>
 
+      <!-- Draft Tasks (if any) -->
+      <div class="col-12 col-xl-6" v-if="data?.my_draft_tasks?.length">
+        <div class="tf-card-header d-flex align-items-center justify-content-between">
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-pencil text-muted"></i>
+            <span>{{ t('status.DRAFT') }}</span>
+          </div>
+          <span class="badge bg-secondary-subtle text-secondary py-1 px-2" style="font-size:0.7rem">
+            {{ data?.my_draft_tasks?.length }}
+          </span>
+        </div>
+        <div>
+          <TaskCard
+            v-for="t in data?.my_draft_tasks"
+            :key="t.id || t.outer_id"
+            :task="t"
+            class="mb-2"
+            @status-changed="load"
+          />
+        </div>
+      </div>
+
       <!-- Recently Completed -->
-      <div class="col-12">
-        <div class="tf-card-header"><i class="bi bi-check-circle text-success"></i>{{ t('dashboard.recently_completed') }}</div>
+      <div :class="data?.my_draft_tasks?.length ? 'col-12 col-xl-6' : 'col-12'">
+        <div class="tf-card-header d-flex align-items-center justify-content-between">
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-check-circle text-success"></i>
+            <span>{{ t('dashboard.recently_completed') }}</span>
+          </div>
+          <span class="badge bg-success-subtle text-success py-1 px-2" style="font-size:0.7rem">
+            {{ data?.recently_completed?.length || 0 }}
+          </span>
+        </div>
         <div v-if="data?.recently_completed?.length">
-          <TaskCard v-for="t in data?.recently_completed" :key="t.id" :task="t" class="mb-2" />
+          <TaskCard
+            v-for="t in data?.recently_completed"
+            :key="t.id || t.outer_id"
+            :task="t"
+            class="mb-2"
+            @status-changed="load"
+          />
         </div>
         <div v-else class="empty-state" style="padding:1.5rem">
+          <i class="bi bi-clock-history"></i>
           <p>{{ t('dashboard.no_completed') }}</p>
         </div>
       </div>
     </div>
+
+    <!-- Create Task Modal -->
+    <CreateTaskModal
+      v-model="showCreateModal"
+      @created="load"
+    />
   </div>
 </template>
 
@@ -112,18 +196,20 @@ import { useToast } from '@/composables/useToast'
 import { useI18n } from '@/composables/useI18n'
 
 const TaskCard = defineAsyncComponent(() => import('@/components/TaskCard.vue'))
+const CreateTaskModal = defineAsyncComponent(() => import('@/components/CreateTaskModal.vue'))
 
-const auth   = useAuthStore()
-const toast  = useToast()
-const { t }  = useI18n()
+const auth = useAuthStore()
+const toast = useToast()
+const { t } = useI18n()
 const loading = ref(true)
-const data    = ref({})
+const showCreateModal = ref(false)
+const data = ref({})
 
 async function load() {
   loading.value = true
   try {
-    const { data: d } = await employeesApi.dashboard()
-    data.value = d
+    const res = await employeesApi.dashboard()
+    data.value = res?.data || res || {}
   } catch (err) {
     toast.error(err.response?.data?.message || err.response?.data?.error || err.response?.data?.detail || 'Failed to load dashboard')
   } finally {
