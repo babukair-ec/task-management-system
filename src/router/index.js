@@ -25,6 +25,16 @@ const routes = [
         component: () => import('@/views/DashboardView.vue'),
       },
       {
+        path: 'tasks',
+        name: 'Tasks',
+        component: () => import('@/views/TasksView.vue'),
+      },
+      {
+        path: 'tasks/create',
+        name: 'TaskCreate',
+        component: () => import('@/views/TaskCreateView.vue'),
+      },
+      {
         path: 'profile',
         name: 'Profile',
         component: () => import('@/views/ProfileView.vue'),

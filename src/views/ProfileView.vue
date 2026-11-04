@@ -2,39 +2,13 @@
   <div class="container-fluid py-4" style="max-width: 800px;">
     <!-- Page Header -->
     <div class="page-header d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4">
-      <div>
-        <h1 class="page-title">
-          {{ hasProfile ? t('profile.edit_title') : t('profile.create_title') }}
-        </h1>
-        <p class="page-subtitle mb-0">
-          {{ hasProfile ? t('profile.edit_subtitle') : t('profile.create_subtitle') }}
-        </p>
-      </div>
+      <h1 class="page-title mb-0">
+        {{ hasProfile ? t('profile.edit_title') : t('profile.create_title') }}
+      </h1>
       <RouterLink v-if="hasProfile" to="/dashboard" class="btn btn-tf-ghost d-flex align-items-center gap-2">
         <i class="bi bi-speedometer2"></i>
         <span>{{ t('profile.go_dashboard') }}</span>
       </RouterLink>
-    </div>
-
-    <!-- Alert Banner when Employee profile is missing -->
-    <div
-      v-if="!loading && !hasProfile"
-      class="alert alert-warning py-3 px-3 d-flex align-items-center gap-3 mb-4 rounded-3 shadow-sm border border-warning-subtle"
-    >
-      <i class="bi bi-exclamation-triangle-fill fs-3 text-warning flex-shrink-0"></i>
-      <div>
-        <div class="fw-bold mb-1">{{ t('profile.alert_missing_title') }}</div>
-        <div class="small opacity-75">{{ t('profile.alert_missing_desc') }}</div>
-      </div>
-    </div>
-
-    <!-- Alert Banner when Employee profile is active -->
-    <div
-      v-else-if="!loading && hasProfile"
-      class="alert alert-success py-2 px-3 d-flex align-items-center gap-2 mb-4 rounded-3 shadow-sm border border-success-subtle"
-    >
-      <i class="bi bi-patch-check-fill text-success fs-5 flex-shrink-0"></i>
-      <div class="small fw-semibold">{{ t('profile.alert_active_desc') }}</div>
     </div>
 
     <!-- Loading State -->

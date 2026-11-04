@@ -1,19 +1,8 @@
 <template>
   <div>
-    <!-- Page Header with "New Task" Button -->
-    <div class="page-header d-flex align-items-center justify-content-between flex-wrap gap-2">
-      <div>
-        <h1 class="page-title">{{ t('dashboard.title') }}</h1>
-        <p class="page-subtitle">{{ t('dashboard.welcome') }}, {{ auth.user?.full_name || auth.user?.display_name || auth.user?.username }} 👋</p>
-      </div>
-
-      <button
-        class="btn btn-tf-primary d-flex align-items-center gap-2 shadow-sm"
-        @click="showCreateModal = true"
-      >
-        <i class="bi bi-plus-lg"></i>
-        <span>{{ t('tasks.create_task') }}</span>
-      </button>
+    <!-- Page Header -->
+    <div class="page-header mb-4">
+      <h1 class="page-title">{{ t('dashboard.title') }}</h1>
     </div>
 
     <!-- Stat Cards -->
@@ -179,12 +168,6 @@
         </div>
       </div>
     </div>
-
-    <!-- Create Task Modal -->
-    <CreateTaskModal
-      v-model="showCreateModal"
-      @created="load"
-    />
   </div>
 </template>
 
@@ -196,13 +179,11 @@ import { useToast } from '@/composables/useToast'
 import { useI18n } from '@/composables/useI18n'
 
 const TaskCard = defineAsyncComponent(() => import('@/components/TaskCard.vue'))
-const CreateTaskModal = defineAsyncComponent(() => import('@/components/CreateTaskModal.vue'))
 
 const auth = useAuthStore()
 const toast = useToast()
 const { t } = useI18n()
 const loading = ref(true)
-const showCreateModal = ref(false)
 const data = ref({})
 
 async function load() {

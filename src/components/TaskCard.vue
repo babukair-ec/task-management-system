@@ -11,10 +11,16 @@
         </span>
       </div>
       <div class="d-flex align-items-center gap-3 flex-wrap" style="font-size:0.78rem; color: var(--tf-text-muted)">
-        <span v-if="currentTask.creator_detail || currentTask.creator">
-          <i class="bi bi-person me-1"></i>{{ currentTask.creator_detail?.display_name || currentTask.creator_detail?.username || currentTask.creator?.full_name || currentTask.creator?.username }}
+        <span v-if="currentTask.creator_detail || currentTask.creator || currentTask.creator_name">
+          <i class="bi bi-person me-1"></i>{{ currentTask.creator_name || currentTask.creator_detail?.display_name || currentTask.creator_detail?.username || currentTask.creator?.full_name || currentTask.creator?.username }}
         </span>
-        <span v-if="currentTask.due_date">
+        <span v-if="currentTask.owner_name">
+          <i class="bi bi-person-check me-1"></i>{{ currentTask.owner_name }}
+        </span>
+        <span v-if="currentTask.estimated_hours">
+          <i class="bi bi-clock me-1"></i>{{ currentTask.estimated_hours }} {{ t('tasks.hours_unit') }}
+        </span>
+        <span v-else-if="currentTask.due_date">
           <i class="bi bi-calendar3 me-1"></i>{{ formatDate(currentTask.due_date) }}
         </span>
         <span v-if="currentTask.assignment_mode_display || currentTask.assignment_mode || currentTask.assignmentMode">

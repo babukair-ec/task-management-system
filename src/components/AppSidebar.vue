@@ -6,6 +6,10 @@
       <i class="bi bi-speedometer2"></i> {{ t('nav.dashboard') }}
     </RouterLink>
 
+    <RouterLink to="/tasks" class="sidebar-nav-item">
+      <i class="bi bi-check2-square"></i> {{ t('nav.tasks') }}
+    </RouterLink>
+
     <RouterLink to="/employees" class="sidebar-nav-item">
       <i class="bi bi-people"></i> {{ t('nav.employees') }}
     </RouterLink>

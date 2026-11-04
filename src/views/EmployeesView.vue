@@ -3,13 +3,10 @@
     <!-- Header with Search & Actions -->
     <div class="page-header d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
       <div>
-        <h1 class="page-title d-flex align-items-center gap-2">
+        <h1 class="page-title d-flex align-items-center gap-2 mb-0">
           <i class="bi bi-people-fill text-primary"></i>
           <span>{{ t('employees.title') }}</span>
         </h1>
-        <p class="page-subtitle mb-0">
-          {{ t('employees.subtitle') }}
-        </p>
       </div>
 
       <div class="d-flex align-items-center gap-2 flex-wrap">
@@ -192,13 +189,10 @@
         <div class="modal-dialog modal-dialog-centered modal-lg">
           <div class="modal-content tf-card border-0 shadow">
             <div class="modal-header border-bottom" style="border-color: var(--tf-border) !important;">
-              <div>
-                <h5 class="modal-title fw-bold d-flex align-items-center gap-2 mb-0">
-                  <i class="bi bi-person-plus-fill text-primary"></i>
-                  {{ t('employees.add_employee') }}
-                </h5>
-                <p class="text-muted small mb-0 mt-1">{{ t('employees.add_employee_subtitle') }}</p>
-              </div>
+              <h5 class="modal-title fw-bold d-flex align-items-center gap-2 mb-0">
+                <i class="bi bi-person-plus-fill text-primary"></i>
+                {{ t('employees.add_employee') }}
+              </h5>
               <button type="button" class="btn-close" @click="closeAddModal"></button>
             </div>
             <form @submit.prevent="submitAddEmployee">

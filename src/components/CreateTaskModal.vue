@@ -8,10 +8,7 @@
             <div class="stat-icon" style="width:36px; height:36px; font-size:1.1rem; background:rgba(37,99,235,0.15); color:var(--tf-primary)">
               <i class="bi bi-plus-circle"></i>
             </div>
-            <div>
-              <h5 class="tf-modal-title mb-0">{{ t('tasks.create_task') }}</h5>
-              <small class="text-muted">{{ t('tasks.create_task_subtitle') }}</small>
-            </div>
+            <h5 class="tf-modal-title mb-0">{{ t('tasks.create_task') }}</h5>
           </div>
           <button type="button" class="btn-close-tf" @click="close" :aria-label="t('tasks.cancel')">
             <i class="bi bi-x-lg"></i>
@@ -20,10 +17,61 @@
 
         <!-- Modal Body -->
         <form @submit.prevent="submitTask" class="tf-modal-body">
+          <!-- Assignment Mode Toggle -->
+          <div class="mb-3">
+            <label class="tf-label mb-2">{{ t('tasks.assignment_mode') }}</label>
+            <div class="d-flex gap-2 flex-wrap">
+              <button
+                type="button"
+                class="btn btn-sm d-flex align-items-center gap-1"
+                :class="form.assignment_mode === 'SELF' ? 'btn-tf-primary' : 'btn-tf-ghost'"
+                @click="form.assignment_mode = 'SELF'"
+              >
+                <i class="bi bi-person"></i>
+                <span>{{ t('tasks.mode_self') }}</span>
+              </button>
+              <button
+                type="button"
+                class="btn btn-sm d-flex align-items-center gap-1"
+                :class="form.assignment_mode === 'DIRECT' ? 'btn-tf-primary' : 'btn-tf-ghost'"
+                @click="setDirectMode"
+              >
+                <i class="bi bi-people"></i>
+                <span>{{ t('tasks.mode_direct') }}</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Direct Assignee Dropdown (when DIRECT is selected) -->
+          <div v-if="form.assignment_mode === 'DIRECT'" class="mb-3">
+            <label class="tf-label">
+              {{ t('tasks.select_subordinate') }} <span class="text-danger">*</span>
+            </label>
+            <div v-if="loadingSubordinates" class="text-muted small py-2 d-flex align-items-center gap-2">
+              <span class="spinner-border spinner-border-sm text-primary"></span>
+              <span>{{ t('common.loading') }}</span>
+            </div>
+            <select
+              v-else-if="subordinates.length > 0"
+              v-model="form.direct_assignee_id"
+              class="form-select tf-input"
+              required
+            >
+              <option value="" disabled>{{ t('tasks.select_subordinate') }}</option>
+              <option v-for="sub in subordinates" :key="sub.outer_id" :value="sub.outer_id">
+                {{ sub.full_name }} ({{ sub.job_title || 'Team Member' }})
+              </option>
+            </select>
+            <div v-else class="alert alert-warning py-2 px-3 small d-flex align-items-center gap-2 mb-0">
+              <i class="bi bi-exclamation-triangle-fill flex-shrink-0"></i>
+              <span>{{ t('tasks.no_subordinates') }}</span>
+            </div>
+          </div>
+
           <!-- Title -->
           <div class="mb-3">
             <label class="tf-label">
-              {{ t('tasks.title') }} <span class="text-danger">*</span>
+              {{ t('tasks.name') }} <span class="text-danger">*</span>
             </label>
             <input
               v-model="form.title"
@@ -64,27 +112,23 @@
               </div>
             </div>
 
-            <!-- Due Date -->
+            <!-- Expected Time in Hours -->
             <div class="col-12 col-md-6">
-              <label class="tf-label">{{ t('tasks.due_date') }}</label>
-              <input
-                v-model="form.due_date"
-                type="date"
-                class="form-control tf-input"
-              />
+              <label class="tf-label">{{ t('tasks.estimated_hours') }}</label>
+              <div class="input-group">
+                <input
+                  v-model.number="form.estimated_hours"
+                  type="number"
+                  min="1"
+                  step="1"
+                  class="form-control tf-input"
+                  :placeholder="t('tasks.estimated_hours_placeholder')"
+                />
+                <span class="input-group-text bg-transparent border-start-0 text-muted" style="border-color: var(--tf-border)">
+                  {{ t('tasks.hours_unit') }}
+                </span>
+              </div>
             </div>
-          </div>
-
-          <!-- Self Task & Draft State Notice -->
-          <div class="alert-self-task mb-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
-            <div class="d-flex align-items-center gap-2">
-              <i class="bi bi-info-circle text-primary"></i>
-              <small>{{ t('modes.SELF') }} &mdash; {{ t('tasks.create_self_task') }}</small>
-            </div>
-            <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle py-1 px-2 d-flex align-items-center gap-1" style="font-size:0.72rem">
-              <i class="bi bi-pencil"></i>
-              {{ t('status.DRAFT') }}
-            </span>
           </div>
 
           <!-- Actions -->
@@ -100,7 +144,7 @@
             <button
               type="submit"
               class="btn btn-tf-primary d-flex align-items-center gap-2"
-              :disabled="loading || !form.title.trim()"
+              :disabled="loading || !form.title.trim() || (form.assignment_mode === 'DIRECT' && !form.direct_assignee_id)"
             >
               <span v-if="loading" class="spinner-border spinner-border-sm" role="status"></span>
               <i v-else class="bi bi-check-lg"></i>
@@ -114,8 +158,9 @@
 </template>
 
 <script setup>
-import { reactive, ref } from 'vue'
+import { reactive, ref, watch } from 'vue'
 import { tasksApi } from '@/api/tasks'
+import { employeesApi } from '@/api/employees'
 import { useToast } from '@/composables/useToast'
 import { useI18n } from '@/composables/useI18n'
 
@@ -128,6 +173,8 @@ const emit = defineEmits(['update:modelValue', 'created'])
 const { t } = useI18n()
 const toast = useToast()
 const loading = ref(false)
+const loadingSubordinates = ref(false)
+const subordinates = ref([])
 
 const priorities = [
   { key: 'LOW', label: 'Low', class: 'pr-low' },
@@ -141,8 +188,9 @@ const form = reactive({
   description: '',
   status: 'DRAFT',
   priority: 'MEDIUM',
-  due_date: '',
+  estimated_hours: null,
   assignment_mode: 'SELF',
+  direct_assignee_id: '',
 })
 
 function resetForm() {
@@ -150,8 +198,9 @@ function resetForm() {
   form.description = ''
   form.status = 'DRAFT'
   form.priority = 'MEDIUM'
-  form.due_date = ''
+  form.estimated_hours = null
   form.assignment_mode = 'SELF'
+  form.direct_assignee_id = ''
 }
 
 function close() {
@@ -159,18 +208,53 @@ function close() {
   resetForm()
 }
 
+async function loadSubordinates() {
+  if (subordinates.value.length > 0) return
+  loadingSubordinates.value = true
+  try {
+    const res = await employeesApi.getHierarchy()
+    subordinates.value = res.data?.subordinates || []
+    if (subordinates.value.length > 0 && !form.direct_assignee_id) {
+      form.direct_assignee_id = subordinates.value[0].outer_id
+    }
+  } catch (err) {
+    console.error('Failed to load supervised employees:', err)
+  } finally {
+    loadingSubordinates.value = false
+  }
+}
+
+async function setDirectMode() {
+  form.assignment_mode = 'DIRECT'
+  await loadSubordinates()
+}
+
+watch(() => props.modelValue, (isOpen) => {
+  if (isOpen && form.assignment_mode === 'DIRECT') {
+    loadSubordinates()
+  }
+})
+
 async function submitTask() {
   if (!form.title.trim()) return
+  if (form.assignment_mode === 'DIRECT' && !form.direct_assignee_id) {
+    toast.error(t('tasks.select_subordinate'))
+    return
+  }
 
   loading.value = true
   try {
     const payload = {
       title: form.title.trim(),
       description: form.description?.trim() || '',
-      status: 'DRAFT',
+      status: form.assignment_mode === 'DIRECT' ? 'ASSIGNED' : 'DRAFT',
       priority: form.priority,
-      assignment_mode: 'SELF',
-      due_date: form.due_date ? new Date(form.due_date).toISOString() : null,
+      assignment_mode: form.assignment_mode,
+      estimated_hours: form.estimated_hours ? parseInt(form.estimated_hours, 10) : null,
+    }
+
+    if (form.assignment_mode === 'DIRECT') {
+      payload.direct_assignee_id = form.direct_assignee_id
     }
 
     const res = await tasksApi.createTask(payload)
@@ -250,7 +334,6 @@ async function submitTask() {
   padding: 1.5rem;
 }
 
-
 .priority-options-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -297,14 +380,6 @@ async function submitTask() {
   background: rgba(239, 68, 68, 0.25);
   border-color: #ef4444;
   color: #f87171;
-}
-
-.alert-self-task {
-  background: rgba(37, 99, 235, 0.08);
-  border: 1px solid rgba(37, 99, 235, 0.2);
-  border-radius: var(--tf-radius-sm);
-  padding: 0.65rem 0.85rem;
-  color: var(--tf-text-muted);
 }
 
 .tf-modal-footer {

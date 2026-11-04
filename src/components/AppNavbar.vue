@@ -105,13 +105,11 @@ import { computed } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useRouter, RouterLink } from 'vue-router'
 import { authApi } from '@/api/auth'
-import { useToast } from '@/composables/useToast'
 import { useI18n } from '@/composables/useI18n'
 import { useTheme } from '@/composables/useTheme'
 
 const auth = useAuthStore()
 const router = useRouter()
-const toast = useToast()
 const { t, locale, isRTL, setLocale } = useI18n()
 const { theme, themes, setTheme } = useTheme()
 
@@ -121,6 +119,5 @@ async function logout() {
   try { await authApi.logout() } catch {}
   auth.clearAuth()
   router.push('/login')
-  toast.info('Logged out')
 }
 </script>

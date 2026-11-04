@@ -57,12 +57,9 @@
         <div class="tf-card" style="padding:2rem">
           <!-- Card Header (Only when registering) -->
           <div v-if="isRegister" class="mb-4">
-            <h2 class="mb-1" style="font-size:1.15rem; font-weight:700">
+            <h2 class="mb-0" style="font-size:1.15rem; font-weight:700">
               {{ t('auth.create_account') }}
             </h2>
-            <p class="text-muted mb-0" style="font-size:0.82rem">
-              {{ t('auth.register_subtitle') }}
-            </p>
           </div>
 
           <!-- Sign In Form -->
@@ -348,7 +345,6 @@ async function handleLogin() {
 
     // Store auth credentials and employee profile
     auth.setAuth(token, user, employee, expiresIn)
-    toast.success(t('auth.sign_in_success'))
 
     if (employee) {
       const redirect = route.query.redirect || '/dashboard'
